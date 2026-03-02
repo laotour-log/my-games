@@ -12,7 +12,7 @@
 
 ## ▶ プレイ
 
-**[► ここでプレイ]https://ksuy-bottom.github.io/my-games/)**
+**[► ここでプレイ]https://laotour-log.github.io/my-games/)**
 
 ## 📁 ファイル構成
 ```
@@ -32,4 +32,4 @@ cartae/
 
 ## 📜 ライセンス
 
-MIT License © 2026 ksuy-bottom
+MIT License © 2026 laotour-log
