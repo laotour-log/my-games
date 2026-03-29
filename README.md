@@ -27,7 +27,7 @@ cartae/
 │   └── index.html   # CARTAEゲーム本体
 ├── minesweeper/
 │   └── index.html   # MINESWEEPERゲーム本体
-└── sudoku/
+├── sudoku/
 │   └── index.html    # SUDOKUゲーム本体
 ├── README.md
 └── LICENSE
