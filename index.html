@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
- <script async src="https://www.googletagmanager.com/gtag/js?id=G-WGNBZYGKKG"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-WGNBZYGKKG');
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GAMES — laotour-log</title>
+<title>GAMES — ksuy-bottom</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -131,12 +124,16 @@
   /* Game cards */
   .games {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     width: 100%;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 800px) {
+    .games { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 500px) {
     .games { grid-template-columns: 1fr; }
   }
 
@@ -293,6 +290,40 @@
   .card-mine .corner { border-color: rgba(0,212,255,0.4); }
   .card-carte .corner { border-color: rgba(200,169,110,0.4); }
 
+  /* Sudoku card — minimal mono */
+  .card-sudoku {
+    background: #0b0b0b;
+    border-color: rgba(220,220,220,0.2);
+    box-shadow: 0 0 0 0 rgba(220,220,220,0);
+    animation-delay: 0.3s;
+  }
+  .card-sudoku:hover {
+    box-shadow: 0 0 40px rgba(220,220,220,0.08), 0 20px 60px rgba(0,0,0,0.5);
+    border-color: rgba(220,220,220,0.55);
+  }
+  .card-sudoku::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at bottom right, rgba(220,220,220,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .card-sudoku .card-tag  { color: #aaaaaa; font-size: 0.65rem; letter-spacing: 0.35em; }
+  .card-sudoku .card-icon { color: #cccccc; filter: none; font-size: 3rem; }
+  .card-sudoku .card-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.25rem;
+    letter-spacing: 0.2em;
+    color: #eeeeee;
+  }
+  .card-sudoku .card-desc { color: #a0a8b0; }
+  .card-sudoku .card-cta {
+    color: #bbbbbb;
+    border-color: rgba(220,220,220,0.3);
+  }
+  .card-sudoku:hover .card-cta { background: rgba(220,220,220,0.06); }
+  .card-sudoku .corner { border-color: rgba(220,220,220,0.3); }
+
   /* Scan line on hover — mine only */
   .card-mine .scan {
     position: absolute;
@@ -328,7 +359,7 @@
 <div class="container">
 
   <header class="header">
-    <div class="header-label">laotour-log / games</div>
+    <div class="header-label">ksuy-bottom / games</div>
     <h1>GAME ROOM</h1>
     <div class="header-line"></div>
   </header>
@@ -348,7 +379,7 @@
     </a>
 
     <!-- Cartae -->
-    <a class="game-card card-carte" href="cartae/index.html">
+    <a class="game-card card-carte" href="carte/index.html">
       <div class="corner corner-tl"></div>
       <div class="corner corner-br"></div>
       <div class="card-tag">♠ logic puzzle ♥</div>
@@ -358,10 +389,21 @@
       <div class="card-cta">Play →</div>
     </a>
 
+    <!-- Sudoku -->
+    <a class="game-card card-sudoku" href="sudoku/index.html">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-br"></div>
+      <div class="card-tag">// number · logic</div>
+      <span class="card-icon">#</span>
+      <div class="card-title">SUDOKU</div>
+      <div class="card-desc">9×9または6×6の<br>グリッドに数字を配置する<br>論理パズル。</div>
+      <div class="card-cta">PLAY &nbsp;→</div>
+    </a>
+
   </div>
 
   <footer class="footer">
-    <span>MIT License © 2026 laotour-log</span>
+    <span>MIT License © 2026 ksuy-bottom</span>
   </footer>
 
 </div>
