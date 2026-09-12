@@ -296,6 +296,7 @@
   }
   .feedback-msg.wrong { color: var(--miss); }
   .feedback-msg.correct { color: var(--accent); }
+  .feedback-msg.reveal { font-size: 1.3rem; }
 
   .hint-note { font-size: 1rem; color: var(--sub); text-align: center; line-height: 1.7; }
 
@@ -674,7 +675,7 @@
       elStage.classList.remove('shake');
       elStage.classList.add('correct-flash');
       setTimeout(function () { elStage.classList.remove('correct-flash'); }, 400);
-      advanceQuiz();
+      advanceQuiz(1000);
     } else {
       quiz.missCount++;
       elHudMiss.textContent = quiz.missCount;
@@ -696,14 +697,14 @@
     if (!quiz) return;
     quiz.missCount += 2;
     elHudMiss.textContent = quiz.missCount;
-    elFeedback.textContent = '正解は ' + quiz.current.kanji + ' でした';
-    elFeedback.className = 'feedback-msg wrong';
+    elFeedback.textContent = quiz.current.kanji;
+    elFeedback.className = 'feedback-msg wrong reveal';
     elAnswerInput.value = '';
     elAnswerInput.classList.remove('wrong');
-    advanceQuiz();
+    advanceQuiz(1800);
   });
 
-  function advanceQuiz() {
+  function advanceQuiz(delay) {
     quiz.index++;
     elHudProgress.textContent = quiz.index + ' / ' + quiz.total;
     if (quiz.index >= quiz.total) {
@@ -713,7 +714,7 @@
     setTimeout(function () {
       loadQuizQuestion();
       focusAnswerInput();
-    }, 350);
+    }, delay || 350);
   }
 
   function finishQuiz() {
