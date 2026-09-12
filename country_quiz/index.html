@@ -319,6 +319,7 @@
   }
   .feedback-msg.wrong { color: var(--miss); }
   .feedback-msg.correct { color: var(--accent); }
+  .feedback-msg.reveal { font-size: 1.3rem; }
 
   .hint-note { font-size: 1rem; color: var(--sub); text-align: center; line-height: 1.7; }
 
@@ -861,11 +862,11 @@
     if (!quiz) return;
     quiz.missCount += 2;
     elHudMiss.textContent = quiz.missCount;
-    elFeedback.textContent = '正解は ' + quiz.current.name_ja + ' (' + quiz.current.name + ') でした';
-    elFeedback.className = 'feedback-msg wrong';
+    elFeedback.textContent = quiz.current.name_ja + ' (' + quiz.current.name + ')';
+    elFeedback.className = 'feedback-msg wrong reveal';
     elAnswerInput.value = '';
     elAnswerInput.classList.remove('wrong');
-    advanceQuiz(2200);
+    advanceQuiz(2000);
   });
 
   function advanceQuiz(delay) {
