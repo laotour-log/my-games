@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CROWNS — laotour-log</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+
+  :root {
+    --bg: #ffffff;
+    --fg: #222222;
+    --fg-light: #999999;
+    --fg-muted: #bbbbbb;
+    --border-thin: #cccccc;
+    --piece-fill: #262626;
+    --conflict: #d64545;
+    --gold: #c9971e;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1a1a1a;
+    --fg: #eaeaea;
+    --fg-light: #888888;
+    --fg-muted: #555555;
+    --border-thin: #3a3a3a;
+    --piece-fill: #1a1a1a;
+    --conflict: #ff6b6b;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── TOP ROW ── */
+  .top-row {
+    width: 100%;
+    max-width: 450px;
+    margin: 1.4rem auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: var(--fg-light);
+    text-decoration: none;
+  }
+  .back-link:hover { color: var(--fg); text-decoration: underline; }
+
+  .theme-toggle {
+    background: transparent;
+    border: 1px solid var(--fg-light);
+    color: var(--fg-light);
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .theme-toggle:hover { color: var(--fg); border-color: var(--fg); }
+  .theme-toggle svg { width: 20px; height: 20px; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 1.2rem 2rem 1.2rem;
+    text-align: center;
+  }
+  h1 {
+    font-size: clamp(2.6rem, 8vw, 4.2rem);
+    font-weight: 400;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  /* ── MAIN ── */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem 3rem;
+    gap: 1.4rem;
+  }
+
+  /* ── RULES ── */
+  .rules {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--fg-light);
+    text-align: center;
+    max-width: 500px;
+    text-wrap: balance;
+    border: 1px solid var(--border-thin);
+    padding: 0.9rem 1.2rem;
+  }
+
+  /* ── DIFFICULTY ── */
+  .difficulty-bar {
+    display: flex;
+    gap: 1.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .diff-btn {
+    background: none; border: none;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    color: var(--fg-light);
+    cursor: pointer;
+    padding: 0.3rem 0.2rem;
+    min-height: 44px;
+    border-bottom: 1px solid transparent;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .diff-btn:hover  { color: var(--fg); }
+  .diff-btn.active { color: var(--fg); border-bottom-color: var(--fg); }
+
+  /* ── STATUS ── */
+  .status-row { display: flex; gap: 2.5rem; align-items: center; justify-content: center; }
+  .status-item { text-align: center; }
+  .status-val {
+    font-size: 1.4rem;
+    letter-spacing: 0.08em;
+    font-weight: 400;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── GRID WRAPPER ── */
+  .grid-wrap {
+    aspect-ratio: 1;
+    transition: width 0.25s ease;
+  }
+
+  /* ── GRID ── */
+  #grid {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    border: 3px solid var(--piece-fill);
+  }
+
+  /* ── CELL ── */
+  .cell {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow 0.1s;
+    border-right: none;
+    border-bottom: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .cell.conflict {
+    box-shadow: inset 0 0 0 3px var(--conflict);
+  }
+
+  /* ── QUEEN / X MARKS ── */
+  .mark-crown {
+    width: 62%;
+    height: 62%;
+    pointer-events: none;
+  }
+  .mark-crown path,
+  .mark-crown circle { fill: var(--piece-fill); }
+  .cell.conflict .mark-crown path,
+  .cell.conflict .mark-crown circle { fill: var(--conflict); }
+
+  .mark-x {
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--piece-fill);
+    pointer-events: none;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    display: flex;
+    gap: 1.8rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
+  }
+  .ctrl-btn {
+    background: none; border: none;
+    font-family: inherit;
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--fg-light);
+    cursor: pointer;
+    min-height: 44px;
+    padding: 0.15rem 0.3rem;
+    border-bottom: 1px solid transparent;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .ctrl-btn:hover { color: var(--fg); border-bottom-color: var(--fg); }
+  .sep { color: var(--fg-muted); font-size: 1rem; }
+
+  /* ── CLEAR ANIMATION ── */
+  @keyframes cellFlash {
+    0%   { filter: brightness(1); box-shadow: none; }
+    40%  { filter: brightness(1.6); box-shadow: 0 0 10px 3px rgba(201,151,30,0.85); }
+    100% { filter: brightness(1); box-shadow: none; }
+  }
+  .cell.flash { animation: cellFlash 0.45s ease forwards; }
+
+  @keyframes gridGlow {
+    0%   { box-shadow: 0 0 0 0 rgba(201,151,30,0); }
+    35%  { box-shadow: 0 0 28px 7px rgba(201,151,30,0.65); }
+    100% { box-shadow: 0 0 0 0 rgba(201,151,30,0); }
+  }
+  #grid.celebrate { animation: gridGlow 1.4s ease-out; }
+
+  /* ── COMPLETE MESSAGE ── */
+  .complete-msg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.4s ease, transform 0.5s cubic-bezier(.34, 1.56, .64, 1);
+    min-height: 1.6em;
+  }
+  .complete-msg.show { opacity: 1; transform: scale(1); }
+  .complete-msg .complete-crown {
+    width: 1.5em;
+    height: 1.5em;
+    flex-shrink: 0;
+  }
+  .complete-msg .complete-crown path,
+  .complete-msg .complete-crown circle { fill: var(--gold); }
+
+  /* ── RECORDS ── */
+  .records {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: min(90vw, 450px);
+  }
+  .records-title {
+    font-size: 1rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--fg-light);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-thin);
+    padding-bottom: 0.3rem;
+  }
+  .records-title span:last-child { color: var(--fg-muted); }
+  .record-row {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg-light);
+  }
+  .record-row .rec-rank { color: var(--fg-muted); width: 1.2em; }
+  .record-row .rec-time { color: var(--fg); }
+  .record-row.new-best .rec-time::after {
+    content: ' ★';
+    font-size: 1rem;
+    color: var(--fg);
+  }
+  .records-best {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    color: var(--fg-light);
+    border-top: 1px solid var(--border-thin);
+    padding-top: 0.3rem;
+    margin-top: 0.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .records-best .best-val { color: var(--fg); font-weight: 700; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+
+<div class="top-row">
+  <a class="back-link" href="../index.html">← GAME ROOM</a>
+  <button class="theme-toggle" id="theme-toggle" aria-label="配色を切り替え">
+    <svg id="theme-icon-moon" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></svg>
+    <svg id="theme-icon-light" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.45 1 1.1 1.1 1.85V16h4.8v-.25c0-.75.4-1.4 1-1.85A6 6 0 0 0 12 3Z"/></svg>
+  </button>
+</div>
+
+<header>
+  <h1>CROWNS</h1>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="ctrl-btn" id="new-btn">NEW GAME</button>
+    <span class="sep">·</span>
+    <button class="ctrl-btn" id="reset-btn">RESET</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- Difficulty -->
+  <div class="difficulty-bar">
+    <button class="diff-btn active" data-size="6">6×6</button>
+    <button class="diff-btn"        data-size="8">8×8</button>
+    <button class="diff-btn"        data-size="10">10×10</button>
+  </div>
+
+  <!-- Status: timer only -->
+  <div class="status-row">
+    <div class="status-item">
+      <div class="status-val" id="timer-val">0:00</div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <div class="grid-wrap" id="grid-wrap" style="width:min(90vw, 450px)">
+    <div id="grid"></div>
+  </div>
+
+  <p class="rules">各行・各列・各領域にちょうど1つずつクイーンを置け。<br>クイーン同士は縦横斜めに隣接できない。</p>
+
+  <div class="complete-msg" id="complete-msg">
+    <svg class="complete-crown" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4,19 L4,15 L7,9 L9,13 L12,6 L15,13 L17,9 L20,15 L20,19 Z"/>
+      <circle cx="7" cy="8.2" r="1.3"/>
+      <circle cx="12" cy="5.2" r="1.3"/>
+      <circle cx="17" cy="8.2" r="1.3"/>
+    </svg>
+    PUZZLE COMPLETE
+  </div>
+
+  <!-- Records -->
+  <div class="records" id="records" style="display:none">
+    <div class="records-title">
+      <span>Recent</span>
+      <span id="records-context"></span>
+    </div>
+    <div id="recent-list"></div>
+    <div class="records-best" id="best-row" style="display:none">
+      <span>Best</span>
+      <span class="best-val" id="best-val">—</span>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CROWN ICON (shared shape for the queen piece)
+// ═══════════════════════════════════════════════════════════
+
+const CROWN_SVG_INNER =
+  '<path d="M4,19 L4,15 L7,9 L9,13 L12,6 L15,13 L17,9 L20,15 L20,19 Z"/>' +
+  '<circle cx="7" cy="8.2" r="1.3"/>' +
+  '<circle cx="12" cy="5.2" r="1.3"/>' +
+  '<circle cx="17" cy="8.2" r="1.3"/>';
+
+// ═══════════════════════════════════════════════════════════
+// REGION COLOR PALETTE (fixed across themes — pastel enough that
+// a dark queen icon stays readable on every color, in both themes)
+// ═══════════════════════════════════════════════════════════
+
+const REGION_COLORS = [
+  '#a8c8e6', '#f5c99b', '#e8a3a8', '#a8d8d0', '#b8dba0',
+  '#f0dd8f', '#c9b3d9', '#f2bfd0', '#c9ab8f', '#cfcac3',
+];
+
+// ═══════════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════════
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SOLUTION GENERATION
+// one queen per row/column, no two queens in adjacent rows
+// with a column difference of 1 or less
+// ═══════════════════════════════════════════════════════════
+
+function generateSolution(size) {
+  const cols = [];
+  const usedCols = new Array(size).fill(false);
+
+  function backtrack(row) {
+    if (row === size) return true;
+    const candidates = shuffle([...Array(size).keys()]);
+    for (const c of candidates) {
+      if (usedCols[c]) continue;
+      if (row > 0 && Math.abs(c - cols[row - 1]) <= 1) continue;
+      cols[row] = c;
+      usedCols[c] = true;
+      if (backtrack(row + 1)) return true;
+      usedCols[c] = false;
+      cols.pop();
+    }
+    return false;
+  }
+
+  backtrack(0);
+  return cols;
+}
+
+// ═══════════════════════════════════════════════════════════
+// REGION GROWTH — flood-fill from each solution queen until
+// every cell belongs to exactly one (contiguous) region
+// ═══════════════════════════════════════════════════════════
+
+function growRegions(size, sol) {
+  const cells = size * size;
+  const regionOf = new Array(cells).fill(-1);
+  const rowOf = i => Math.floor(i / size);
+  const colOf = i => i % size;
+  const idx = (r, c) => r * size + c;
+  const frontier = [];
+
+  function pushNeighbors(cell, region) {
+    const r = rowOf(cell), c = colOf(cell);
+    const deltas = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    for (const [dr, dc] of deltas) {
+      const nr = r + dr, nc = c + dc;
+      if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
+      const ni = idx(nr, nc);
+      if (regionOf[ni] === -1) frontier.push({ cell: ni, region });
+    }
+  }
+
+  for (let r = 0; r < size; r++) {
+    const seed = idx(r, sol[r]);
+    regionOf[seed] = r;
+  }
+  for (let r = 0; r < size; r++) pushNeighbors(idx(r, sol[r]), r);
+
+  let remaining = cells - size;
+  while (remaining > 0 && frontier.length > 0) {
+    const pick = Math.floor(Math.random() * frontier.length);
+    const { cell, region } = frontier.splice(pick, 1)[0];
+    if (regionOf[cell] !== -1) continue;
+    regionOf[cell] = region;
+    remaining--;
+    pushNeighbors(cell, region);
+  }
+
+  return regionOf;
+}
+
+// ═══════════════════════════════════════════════════════════
+// SOLVER — finds one solution different from `sol` (if any),
+// used to detect and repair extra solutions
+// ═══════════════════════════════════════════════════════════
+
+function findAlternateSolution(regionOf, size, sol) {
+  const usedCols = new Array(size).fill(false);
+  const usedRegions = new Array(size).fill(false);
+  const path = new Array(size).fill(-1);
+  let found = null;
+
+  function isSameAsSol(p) {
+    for (let i = 0; i < size; i++) if (p[i] !== sol[i]) return false;
+    return true;
+  }
+
+  function backtrack(row, lastCol) {
+    if (found) return;
+    if (row === size) {
+      if (!isSameAsSol(path)) found = path.slice();
+      return;
+    }
+    for (let c = 0; c < size; c++) {
+      if (found) return;
+      if (usedCols[c]) continue;
+      if (lastCol !== -1 && Math.abs(c - lastCol) <= 1) continue;
+      const reg = regionOf[row * size + c];
+      if (usedRegions[reg]) continue;
+      usedCols[c] = true; usedRegions[reg] = true; path[row] = c;
+      backtrack(row + 1, c);
+      usedCols[c] = false; usedRegions[reg] = false;
+    }
+  }
+  backtrack(0, -1);
+  return found;
+}
+
+function neighbors4(cell, size) {
+  const r = Math.floor(cell / size), c = cell % size;
+  const out = [];
+  for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+    const nr = r + dr, nc = c + dc;
+    if (nr >= 0 && nr < size && nc >= 0 && nc < size) out.push(nr * size + nc);
+  }
+  return out;
+}
+
+function hasNeighborInRegion(cell, region, regionOf, size) {
+  return neighbors4(cell, size).some(n => regionOf[n] === region);
+}
+
+function staysConnectedWithout(region, removedCell, regionOf, size) {
+  const cellsInRegion = [];
+  for (let i = 0; i < regionOf.length; i++) {
+    if (regionOf[i] === region && i !== removedCell) cellsInRegion.push(i);
+  }
+  if (cellsInRegion.length === 0) return false;
+  if (cellsInRegion.length === 1) return true;
+  const visited = new Set([cellsInRegion[0]]);
+  const stack = [cellsInRegion[0]];
+  while (stack.length) {
+    const cur = stack.pop();
+    for (const n of neighbors4(cur, size)) {
+      if (regionOf[n] === region && n !== removedCell && !visited.has(n)) {
+        visited.add(n);
+        stack.push(n);
+      }
+    }
+  }
+  return visited.size === cellsInRegion.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+// UNIQUENESS REPAIR
+// A purely random region growth almost never yields a unique
+// solution on larger boards (measured ~0% at 10×10). Instead of
+// retrying blindly, find one extra solution and move a single
+// boundary cell into a region that extra solution already uses
+// elsewhere — this always keeps the original `sol` valid (that
+// queen cell is untouched) and only proceeds when the swap keeps
+// both regions non-empty and contiguous.
+// ═══════════════════════════════════════════════════════════
+
+function repairUniqueness(regionOf, size, sol, maxRepairs) {
+  for (let iter = 0; iter < maxRepairs; iter++) {
+    const alt = findAlternateSolution(regionOf, size, sol);
+    if (!alt) return true;
+
+    const diffRows = [];
+    for (let r = 0; r < size; r++) if (alt[r] !== sol[r]) diffRows.push(r);
+    shuffle(diffRows);
+
+    let repaired = false;
+    for (const r of diffRows) {
+      const cell = r * size + alt[r];
+      const oldReg = regionOf[cell];
+      const altRegions = shuffle([...new Set(alt.map((c, rr) => regionOf[rr * size + c]))]);
+      for (const newReg of altRegions) {
+        if (newReg === oldReg) continue;
+        if (!hasNeighborInRegion(cell, newReg, regionOf, size)) continue;
+        if (!staysConnectedWithout(oldReg, cell, regionOf, size)) continue;
+        regionOf[cell] = newReg;
+        repaired = true;
+        break;
+      }
+      if (repaired) break;
+    }
+    if (!repaired) return false;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════════════════════
+// PUZZLE GENERATION
+// ═══════════════════════════════════════════════════════════
+
+function generatePuzzle(size) {
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const sol = generateSolution(size);
+    for (let gtry = 0; gtry < 8; gtry++) {
+      const regionOf = growRegions(size, sol);
+      if (repairUniqueness(regionOf, size, sol, 300)) {
+        return regionOf;
+      }
+    }
+  }
+  // extremely unlikely fallback — use whatever the last attempt produced
+  return growRegions(size, generateSolution(size));
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════════════════════════
+
+const G = {
+  size: 6,
+  cells: 36,
+  regionOf: [],
+  board: [],
+  timer: 0,
+  timerRef: null,
+  complete: false,
+};
+
+// ═══════════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════════
+
+function startTimer() {
+  clearInterval(G.timerRef);
+  G.timer = 0;
+  renderTimer();
+  G.timerRef = setInterval(() => {
+    if (!G.complete) { G.timer++; renderTimer(); }
+  }, 1000);
+}
+
+function renderTimer() {
+  const m = Math.floor(G.timer / 60);
+  const s = G.timer % 60;
+  document.getElementById('timer-val').textContent =
+    `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DOM CONSTRUCTION
+// ═══════════════════════════════════════════════════════════
+
+function setHidden(el, isHidden) {
+  if (isHidden) el.setAttribute('hidden', '');
+  else el.removeAttribute('hidden');
+}
+
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  grid.style.gridTemplateColumns = `repeat(${G.size}, 1fr)`;
+  grid.style.gridTemplateRows = `repeat(${G.size}, 1fr)`;
+  grid.classList.remove('celebrate');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < G.cells; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.dataset.i = i;
+
+    const crown = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    crown.setAttribute('class', 'mark-crown');
+    crown.setAttribute('viewBox', '0 0 24 24');
+    crown.innerHTML = CROWN_SVG_INNER;
+    crown.setAttribute('hidden', '');
+    cell.appendChild(crown);
+
+    const xMark = document.createElement('span');
+    xMark.className = 'mark-x';
+    xMark.textContent = '×';
+    xMark.setAttribute('hidden', '');
+    cell.appendChild(xMark);
+
+    cell.addEventListener('click', () => clickCell(i));
+    grid.appendChild(cell);
+  }
+
+  applyRegionAppearance();
+}
+
+function applyRegionAppearance() {
+  document.querySelectorAll('.cell').forEach(cell => {
+    const i = +cell.dataset.i;
+    const r = Math.floor(i / G.size), c = i % G.size;
+    const reg = G.regionOf[i];
+    cell.style.backgroundColor = REGION_COLORS[reg];
+
+    const rightDiff = (c === G.size - 1) || G.regionOf[i + 1] !== reg;
+    const bottomDiff = (r === G.size - 1) || G.regionOf[i + G.size] !== reg;
+    // The region palette is fixed regardless of theme, so both border colors below
+    // must also stay fixed (not var(--fg), which goes light in dark mode and nearly
+    // disappears against these pastel cells):
+    // - between different regions: a bold dark line (var(--piece-fill))
+    // - between cells in the same region: a faint dark line, just enough to show
+    //   the grid without competing with the region boundary
+    cell.style.borderRight = rightDiff ? '3px solid var(--piece-fill)' : '1px solid rgba(0,0,0,0.18)';
+    cell.style.borderBottom = bottomDiff ? '3px solid var(--piece-fill)' : '1px solid rgba(0,0,0,0.18)';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+
+function computeConflicts() {
+  const queens = [];
+  for (let i = 0; i < G.cells; i++) if (G.board[i] === 2) queens.push(i);
+
+  const rowOf = i => Math.floor(i / G.size);
+  const colOf = i => i % G.size;
+  const conflictSet = new Set();
+  const rowMap = new Map(), colMap = new Map(), regMap = new Map();
+
+  for (const i of queens) {
+    const r = rowOf(i), c = colOf(i), reg = G.regionOf[i];
+    if (!rowMap.has(r)) rowMap.set(r, []);
+    if (!colMap.has(c)) colMap.set(c, []);
+    if (!regMap.has(reg)) regMap.set(reg, []);
+    rowMap.get(r).push(i);
+    colMap.get(c).push(i);
+    regMap.get(reg).push(i);
+  }
+  for (const map of [rowMap, colMap, regMap]) {
+    for (const arr of map.values()) {
+      if (arr.length > 1) arr.forEach(i => conflictSet.add(i));
+    }
+  }
+
+  for (let a = 0; a < queens.length; a++) {
+    for (let b = a + 1; b < queens.length; b++) {
+      const i = queens[a], j = queens[b];
+      const dr = Math.abs(rowOf(i) - rowOf(j));
+      const dc = Math.abs(colOf(i) - colOf(j));
+      if (dr <= 1 && dc <= 1) { conflictSet.add(i); conflictSet.add(j); }
+    }
+  }
+
+  return { queens, conflictSet };
+}
+
+function renderAll() {
+  const { queens, conflictSet } = computeConflicts();
+
+  document.querySelectorAll('.cell').forEach(cell => {
+    const i = +cell.dataset.i;
+    const state = G.board[i];
+    const crown = cell.querySelector('.mark-crown');
+    const xMark = cell.querySelector('.mark-x');
+
+    setHidden(crown, state !== 2);
+    setHidden(xMark, state !== 1);
+    cell.classList.toggle('conflict', conflictSet.has(i));
+  });
+
+  checkComplete(queens, conflictSet);
+}
+
+// ═══════════════════════════════════════════════════════════
+// INPUT
+// ═══════════════════════════════════════════════════════════
+
+function clickCell(i) {
+  if (G.complete) return;
+  G.board[i] = (G.board[i] + 1) % 3;
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMPLETION
+// ═══════════════════════════════════════════════════════════
+
+function checkComplete(queens, conflictSet) {
+  if (queens.length !== G.size || conflictSet.size !== 0) return;
+  G.complete = true;
+  clearInterval(G.timerRef);
+  playCompleteAnimation();
+}
+
+function playCompleteAnimation() {
+  const cells = document.querySelectorAll('.cell');
+  const n = G.cells;
+
+  const order = [...Array(n).keys()].sort((a, b) => {
+    const da = Math.floor(a / G.size) + (a % G.size);
+    const db = Math.floor(b / G.size) + (b % G.size);
+    return da - db;
+  });
+
+  order.forEach((idx, step) => {
+    setTimeout(() => {
+      const cell = cells[idx];
+      cell.classList.remove('flash');
+      void cell.offsetWidth;
+      cell.classList.add('flash');
+    }, step * 18);
+  });
+
+  const maxStep = n - 1;
+  const delay = maxStep * 18 + 450;
+  setTimeout(() => {
+    document.getElementById('complete-msg').classList.add('show');
+    const grid = document.getElementById('grid');
+    grid.classList.remove('celebrate');
+    void grid.offsetWidth;
+    grid.classList.add('celebrate');
+    saveRecord(G.timer);
+  }, delay);
+}
+
+// ═══════════════════════════════════════════════════════════
+// RECORDS
+// ═══════════════════════════════════════════════════════════
+
+function recordKey() { return `crowns_best_${G.size}`; }
+function recentKey() { return `crowns_recent_${G.size}`; }
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${String(sec).padStart(2, '0')}`;
+}
+
+function saveRecord(elapsed) {
+  const bKey = recordKey();
+  let prevBest = 999999;
+  try { prevBest = parseInt(localStorage.getItem(bKey) || '999999', 10); } catch (e) {}
+  const isNewBest = elapsed < prevBest;
+  if (isNewBest) {
+    try { localStorage.setItem(bKey, elapsed); } catch (e) {}
+  }
+  const best = isNewBest ? elapsed : prevBest;
+
+  const rKey = recentKey();
+  let recent = [];
+  try { recent = JSON.parse(sessionStorage.getItem(rKey) || '[]'); } catch (e) {}
+  recent.unshift(elapsed);
+  if (recent.length > 3) recent = recent.slice(0, 3);
+  try { sessionStorage.setItem(rKey, JSON.stringify(recent)); } catch (e) {}
+
+  renderRecords(recent, best, isNewBest);
+}
+
+function renderRecords(recent, best, isNewBest) {
+  const wrap = document.getElementById('records');
+  const ctx = document.getElementById('records-context');
+  const list = document.getElementById('recent-list');
+  const bestRow = document.getElementById('best-row');
+  const bestVal = document.getElementById('best-val');
+
+  ctx.textContent = `${G.size}×${G.size}`;
+  list.innerHTML = '';
+
+  recent.forEach((t, idx) => {
+    const row = document.createElement('div');
+    row.className = 'record-row' + (idx === 0 && isNewBest ? ' new-best' : '');
+
+    const rank = document.createElement('span');
+    rank.className = 'rec-rank';
+    rank.textContent = idx + 1;
+
+    const time = document.createElement('span');
+    time.className = 'rec-time';
+    time.textContent = fmtTime(t);
+
+    row.appendChild(rank);
+    row.appendChild(time);
+    list.appendChild(row);
+  });
+
+  if (best < 999999) {
+    bestRow.style.display = '';
+    bestVal.textContent = fmtTime(best);
+  }
+
+  wrap.style.display = '';
+}
+
+function loadRecordsDisplay() {
+  const bKey = recordKey();
+  const rKey = recentKey();
+  let best = 999999;
+  try { best = parseInt(localStorage.getItem(bKey) || '999999', 10); } catch (e) {}
+  let recent = [];
+  try { recent = JSON.parse(sessionStorage.getItem(rKey) || '[]'); } catch (e) {}
+
+  if (recent.length === 0 && best === 999999) {
+    document.getElementById('records').style.display = 'none';
+    return;
+  }
+  renderRecords(recent, best, false);
+}
+
+// ═══════════════════════════════════════════════════════════
+// GAME MANAGEMENT
+// ═══════════════════════════════════════════════════════════
+
+function updateGridWrapWidth() {
+  const wrap = document.getElementById('grid-wrap');
+  if (G.size === 6) wrap.style.width = 'min(66vw, 330px)';
+  else if (G.size === 8) wrap.style.width = 'min(80vw, 400px)';
+  else wrap.style.width = 'min(90vw, 450px)';
+}
+
+function newGame() {
+  document.getElementById('complete-msg').classList.remove('show');
+  G.cells = G.size * G.size;
+  G.complete = false;
+  G.regionOf = generatePuzzle(G.size);
+  G.board = new Array(G.cells).fill(0);
+
+  updateGridWrapWidth();
+  buildGrid();
+  startTimer();
+  renderAll();
+  loadRecordsDisplay();
+}
+
+function resetGame() {
+  document.getElementById('complete-msg').classList.remove('show');
+  document.getElementById('grid').classList.remove('celebrate');
+  G.complete = false;
+  G.board = new Array(G.cells).fill(0);
+  startTimer();
+  renderAll();
+  document.querySelectorAll('.cell').forEach(c => c.classList.remove('flash'));
+  loadRecordsDisplay();
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVENT LISTENERS
+// ═══════════════════════════════════════════════════════════
+
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const size = +btn.dataset.size;
+    if (size === G.size) return;
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    G.size = size;
+    newGame();
+  });
+});
+
+document.getElementById('new-btn').addEventListener('click', newGame);
+document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+// ═══════════════════════════════════════════════════════════
+// THEME (light / dark)
+// ═══════════════════════════════════════════════════════════
+
+const THEME_KEY = 'crowns_theme_v1';
+const elThemeToggle = document.getElementById('theme-toggle');
+const elThemeIconMoon = document.getElementById('theme-icon-moon');
+const elThemeIconLight = document.getElementById('theme-icon-light');
+
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    setHidden(elThemeIconMoon, true);
+    setHidden(elThemeIconLight, false);
+    elThemeToggle.setAttribute('aria-label', 'ライトモードに切り替え');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    setHidden(elThemeIconMoon, false);
+    setHidden(elThemeIconLight, true);
+    elThemeToggle.setAttribute('aria-label', 'ダークモードに切り替え');
+  }
+}
+
+function loadSavedTheme() {
+  try {
+    return localStorage.getItem(THEME_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveTheme(theme) {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
+  } catch (e) {
+    // 保存できない環境(プライベートモード等)でも見た目の切り替え自体は続行する
+  }
+}
+
+applyTheme(loadSavedTheme() === 'dark' ? 'dark' : 'light');
+
+elThemeToggle.addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  saveTheme(next);
+});
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+
+newGame();
+</script>
+</body>
+</html>
