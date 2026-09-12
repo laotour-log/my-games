@@ -839,7 +839,7 @@
       elStage.classList.remove('shake');
       elStage.classList.add('correct-flash');
       setTimeout(function () { elStage.classList.remove('correct-flash'); }, 400);
-      advanceQuiz();
+      advanceQuiz(1000);
     } else {
       quiz.missCount++;
       elHudMiss.textContent = quiz.missCount;
@@ -865,7 +865,7 @@
     elFeedback.className = 'feedback-msg wrong';
     elAnswerInput.value = '';
     elAnswerInput.classList.remove('wrong');
-    advanceQuiz(1800);
+    advanceQuiz(3000);
   });
 
   function advanceQuiz(delay) {
