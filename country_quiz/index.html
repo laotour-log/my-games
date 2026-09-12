@@ -862,7 +862,7 @@
     if (!quiz) return;
     quiz.missCount += 2;
     elHudMiss.textContent = quiz.missCount;
-    elFeedback.textContent = quiz.current.name_ja + ' (' + quiz.current.name + ')';
+    elFeedback.textContent = quiz.current.name + ' (' + quiz.current.name_ja + ')';
     elFeedback.className = 'feedback-msg wrong reveal';
     elAnswerInput.value = '';
     elAnswerInput.classList.remove('wrong');
