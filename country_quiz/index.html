@@ -258,9 +258,7 @@
     flex-direction: column;
     align-items: center;
     gap: 18px;
-    position: sticky;
-    top: 0;
-    z-index: 5;
+    position: relative;
   }
   .stage.shake { animation: shake 0.28s ease; }
   @keyframes shake {
@@ -802,6 +800,27 @@
   function focusAnswerInput() {
     elAnswerInput.focus({ preventScroll: true });
   }
+
+  // スマホでこの入力欄をタップした時、キーボード表示に合わせてSafariが
+  // ページを自動スクロールして「問題ごと」上にずれる現象を止めるため、
+  // フォーカス中はページのスクロール自体を固定する。
+  var scrollLockY = 0;
+  function lockPageScroll() {
+    scrollLockY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-scrollLockY) + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+  }
+  function unlockPageScroll() {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    window.scrollTo(0, scrollLockY);
+  }
+  elAnswerInput.addEventListener('focus', lockPageScroll);
+  elAnswerInput.addEventListener('blur', unlockPageScroll);
 
   function applyMotion(svg, mode) {
     svg.style.transform = '';
