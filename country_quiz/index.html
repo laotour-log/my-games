@@ -810,12 +810,22 @@
     elAnswerInput.focus({ preventScroll: true });
   }
 
-  // 入力欄にフォーカスしている間（＝スマホでキーボードが出ている間）は
-  // 戻るボタンとHUDを隠し、問題の絵をタップ前と同じ大きさのまま
-  // 入力欄と一緒に画面内へ収める。
-  elAnswerInput.addEventListener('focus', function () {
-    screenQuiz.classList.add('keyboard-focus');
-  });
+  // 戻るボタンとHUDを隠すのは「入力欄にフォーカスがあるかどうか」ではなく
+  // 「実際にキーボードが開いて画面が縮んでいるかどうか」で判定する
+  // （次の問題への切り替え時、キーボードが開かないままフォーカスだけ戻ることがあり、
+  // そのときにHUDが消えてしまうのを防ぐため）。
+  function updateKeyboardFocusState() {
+    var keyboardLikelyOpen = window.visualViewport
+      && (window.innerHeight - window.visualViewport.height) > 120;
+    if (keyboardLikelyOpen && document.activeElement === elAnswerInput) {
+      screenQuiz.classList.add('keyboard-focus');
+    } else {
+      screenQuiz.classList.remove('keyboard-focus');
+    }
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateKeyboardFocusState);
+  }
   elAnswerInput.addEventListener('blur', function () {
     screenQuiz.classList.remove('keyboard-focus');
   });
