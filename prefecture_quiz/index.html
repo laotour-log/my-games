@@ -742,7 +742,7 @@
     }
     setTimeout(function () {
       loadQuizQuestion();
-      window.scrollTo(0, 0);
+      elStage.scrollIntoView({ block: 'start' });
       focusAnswerInput();
     }, delay || 350);
   }
