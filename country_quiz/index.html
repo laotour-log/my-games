@@ -248,6 +248,14 @@
   .hud-value { font-size: 1.1rem; color: var(--text); }
   .hud-value.miss { color: var(--miss); }
 
+  /* 入力欄フォーカス中（＝スマホでキーボード表示中）は、問題の絵の上にある
+     要素を一時的に隠してスペースを空け、絵の縮小なしで問題と入力欄が
+     両方画面内に収まるようにする */
+  #screen-quiz.keyboard-focus #btn-quit-quiz,
+  #screen-quiz.keyboard-focus .hud {
+    display: none;
+  }
+
   .stage {
     width: 100%;
     background: var(--panel);
@@ -801,6 +809,16 @@
   function focusAnswerInput() {
     elAnswerInput.focus({ preventScroll: true });
   }
+
+  // 入力欄にフォーカスしている間（＝スマホでキーボードが出ている間）は
+  // 戻るボタンとHUDを隠し、問題の絵をタップ前と同じ大きさのまま
+  // 入力欄と一緒に画面内へ収める。
+  elAnswerInput.addEventListener('focus', function () {
+    screenQuiz.classList.add('keyboard-focus');
+  });
+  elAnswerInput.addEventListener('blur', function () {
+    screenQuiz.classList.remove('keyboard-focus');
+  });
 
   function applyMotion(svg, mode) {
     svg.style.transform = '';
