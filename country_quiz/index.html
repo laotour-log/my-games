@@ -274,8 +274,7 @@
   }
 
   .silhouette-box {
-    width: 100%;
-    max-width: 300px;
+    width: min(100%, 300px, var(--silhouette-fit, 300px));
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
@@ -794,33 +793,33 @@
     loadQuizQuestion();
     if (quizTimerHandle) clearInterval(quizTimerHandle);
     quizTimerHandle = setInterval(tickQuizTimer, 100);
-    focusAnswerInput();
+    fitSilhouetteToViewport();
+    // クイズ開始直後は問題を見せるだけにして、キーボードは自動で開かない
+    // （タップして初めて開く。開いた瞬間に問題が隠れるのを防ぐため）。
   }
 
   function focusAnswerInput() {
     elAnswerInput.focus({ preventScroll: true });
   }
 
-  // スマホでこの入力欄をタップした時、キーボード表示に合わせてSafariが
-  // ページを自動スクロールして「問題ごと」上にずれる現象を止めるため、
-  // フォーカス中はページのスクロール自体を固定する。
-  var scrollLockY = 0;
-  function lockPageScroll() {
-    scrollLockY = window.scrollY || window.pageYOffset || 0;
-    document.body.style.position = 'fixed';
-    document.body.style.top = (-scrollLockY) + 'px';
-    document.body.style.left = '0';
-    document.body.style.right = '0';
+  // スマホでキーボードが開くと、その分だけ実際に見える高さ（visualViewport）が
+  // 縮む。シルエットの表示サイズをその高さに合わせて縮めることで、
+  // 入力欄をタップしてキーボードが出ても問題と入力欄が両方見える範囲に収まるようにする。
+  function fitSilhouetteToViewport() {
+    if (!window.visualViewport) return;
+    if (screenQuiz.hidden) {
+      document.documentElement.style.removeProperty('--silhouette-fit');
+      return;
+    }
+    var vh = window.visualViewport.height;
+    var otherHeight = screenQuiz.scrollHeight - elSilhouette.offsetHeight;
+    var available = vh - otherHeight - 44;
+    available = Math.max(90, Math.min(300, available));
+    document.documentElement.style.setProperty('--silhouette-fit', available + 'px');
   }
-  function unlockPageScroll() {
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.right = '';
-    window.scrollTo(0, scrollLockY);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitSilhouetteToViewport);
   }
-  elAnswerInput.addEventListener('focus', lockPageScroll);
-  elAnswerInput.addEventListener('blur', unlockPageScroll);
 
   function applyMotion(svg, mode) {
     svg.style.transform = '';
