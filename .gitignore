@@ -1,0 +1,8 @@
+# 公開しないもの
+未up/
+assets/
+country_quiz/build_scripts/
+CLAUDE.md
+
+# Macが自動で作るファイル
+.DS_Store
