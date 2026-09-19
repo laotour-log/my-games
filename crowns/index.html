@@ -159,6 +159,9 @@
     height: 100%;
     display: grid;
     border: 3px solid var(--piece-fill);
+    /* fractional column widths can leave a sub-pixel remainder at the right/bottom
+       edge; paint it with the border color so it never shows the page background */
+    background: var(--piece-fill);
   }
 
   /* ── CELL ── */
@@ -701,16 +704,22 @@ function applyRegionAppearance() {
     const reg = G.regionOf[i];
     cell.style.backgroundColor = REGION_COLORS[reg];
 
-    const rightDiff = (c === G.size - 1) || G.regionOf[i + 1] !== reg;
-    const bottomDiff = (r === G.size - 1) || G.regionOf[i + G.size] !== reg;
+    // Cells on the outer edge draw no outer border: #grid's own 3px border already
+    // is the outline (drawing both made the right/bottom edge twice as thick).
+    const rightEdge = c === G.size - 1;
+    const bottomEdge = r === G.size - 1;
+    const rightDiff = G.regionOf[i + 1] !== reg;
+    const bottomDiff = G.regionOf[i + G.size] !== reg;
     // The region palette is fixed regardless of theme, so both border colors below
     // must also stay fixed (not var(--fg), which goes light in dark mode and nearly
     // disappears against these pastel cells):
     // - between different regions: a bold dark line (var(--piece-fill))
     // - between cells in the same region: a faint dark line, just enough to show
     //   the grid without competing with the region boundary
-    cell.style.borderRight = rightDiff ? '3px solid var(--piece-fill)' : '1px solid rgba(0,0,0,0.18)';
-    cell.style.borderBottom = bottomDiff ? '3px solid var(--piece-fill)' : '1px solid rgba(0,0,0,0.18)';
+    cell.style.borderRight = rightEdge ? 'none'
+      : rightDiff ? '3px solid var(--piece-fill)' : '1px solid rgba(0,0,0,0.18)';
+    cell.style.borderBottom = bottomEdge ? 'none'
+      : bottomDiff ? '3px solid var(--piece-fill)' : '1px solid rgba(0,0,0,0.18)';
   });
 }
 
