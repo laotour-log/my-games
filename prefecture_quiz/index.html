@@ -716,11 +716,11 @@
   function advanceQuiz(delay) {
     quiz.index++;
     elHudProgress.textContent = quiz.index + ' / ' + quiz.total;
-    if (quiz.index >= quiz.total) {
-      finishQuiz();
-      return;
-    }
     setTimeout(function () {
+      if (quiz.index >= quiz.total) {
+        finishQuiz();
+        return;
+      }
       loadQuizQuestion();
       elStage.scrollIntoView({ block: 'start' });
       focusAnswerInput();
