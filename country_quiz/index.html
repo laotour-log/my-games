@@ -562,6 +562,7 @@
 
   <!-- LEARN -->
   <section class="screen" id="screen-learn" hidden>
+    <button class="btn-quit" id="btn-learn-title">← タイトルへ戻る</button>
     <div class="learn-progress" id="learn-progress">1 / 200</div>
     <div class="stage" id="learn-stage">
       <div class="silhouette-box" id="learn-silhouette-box"></div>
@@ -573,7 +574,14 @@
       <button class="btn secondary" id="btn-learn-prev">← 前へ</button>
       <button class="btn secondary" id="btn-learn-next">次へ →</button>
     </div>
-    <button class="btn secondary" id="btn-learn-back">← タイトルへ戻る</button>
+    <button class="btn secondary" id="btn-learn-back">← 地域選択へ戻る</button>
+  </section>
+
+  <!-- LEARN REGION SELECT -->
+  <section class="screen" id="screen-learn-select" hidden>
+    <button class="btn-quit" id="btn-learn-select-back">← タイトルへ戻る</button>
+    <div class="badge">地域を選んで覚える</div>
+    <div class="region-grid" id="learn-region-grid"></div>
   </section>
 
   <!-- RESULT -->
@@ -695,10 +703,11 @@
   var screenLength = document.getElementById('screen-length');
   var screenQuiz = document.getElementById('screen-quiz');
   var screenLearn = document.getElementById('screen-learn');
+  var screenLearnSelect = document.getElementById('screen-learn-select');
   var screenResult = document.getElementById('screen-result');
 
   function showScreen(el) {
-    [screenLength, screenQuiz, screenLearn, screenResult].forEach(function (s) { s.hidden = (s !== el); });
+    [screenLength, screenQuiz, screenLearn, screenLearnSelect, screenResult].forEach(function (s) { s.hidden = (s !== el); });
   }
 
   /* ---------------- STAGE toggle (top of screen-length) ---------------- */
@@ -790,23 +799,17 @@
 
   var elWorldCard = document.getElementById('btn-select-world');
   elWorldCard.addEventListener('click', function () {
-    regionFlow = 'quiz';
     selectPool('World', '世界', allIndexes());
   });
   selectableCards.push({ el: elWorldCard, key: 'World' });
 
-  /* ---------------- region select (shared by quiz and learn) ---------------- */
-
-  var regionFlow = 'quiz'; // 'quiz' | 'learn' -- which flow the region grid currently serves
+  /* ---------------- region select (quiz) ---------------- */
 
   var elRegionGrid = document.getElementById('region-grid');
-  var regionCards = [];
   REGION_ORDER.forEach(function (region) {
-    var allIdxs = [];
     var quizIdxs = [];
     for (var i = 0; i < COUNTRY_DATA.length; i++) {
       if (COUNTRY_DATA[i].continent !== region) continue;
-      allIdxs.push(i);
       if (!EXCLUDED_COUNTRY_CODES[COUNTRY_DATA[i].code]) quizIdxs.push(i);
     }
     var card = document.createElement('button');
@@ -820,23 +823,33 @@
     card.appendChild(title);
     card.appendChild(desc);
     card.addEventListener('click', function () {
-      if (regionFlow === 'learn') {
-        startLearn(allIdxs);
-        return;
-      }
       selectPool(region, REGION_LABEL[region], quizIdxs);
     });
     elRegionGrid.appendChild(card);
-    regionCards.push({ card: card, region: region, desc: desc, quizCount: quizIdxs.length, allCount: allIdxs.length });
     selectableCards.push({ el: card, key: region });
   });
 
-  function updateRegionCardCounts() {
-    regionCards.forEach(function (rc) {
-      var n = regionFlow === 'learn' ? rc.allCount : rc.quizCount;
-      rc.desc.textContent = n + 'ヶ国・地域';
-    });
-  }
+  /* ---------------- region select (learn, separate screen) ---------------- */
+
+  var elLearnRegionGrid = document.getElementById('learn-region-grid');
+  REGION_ORDER.forEach(function (region) {
+    var allIdxs = [];
+    for (var i = 0; i < COUNTRY_DATA.length; i++) {
+      if (COUNTRY_DATA[i].continent === region) allIdxs.push(i);
+    }
+    var card = document.createElement('button');
+    card.className = 'region-card';
+    var title = document.createElement('span');
+    title.className = 'title';
+    title.textContent = REGION_LABEL[region];
+    var desc = document.createElement('span');
+    desc.className = 'desc';
+    desc.textContent = allIdxs.length + 'ヶ国・地域';
+    card.appendChild(title);
+    card.appendChild(desc);
+    card.addEventListener('click', function () { startLearn(allIdxs); });
+    elLearnRegionGrid.appendChild(card);
+  });
 
   /* ---------------- quiz ---------------- */
 
@@ -1101,12 +1114,10 @@
   }
 
   document.getElementById('btn-mode-learn').addEventListener('click', function () {
-    regionFlow = 'learn';
-    updateRegionCardCounts();
-    selectedKey = null;
-    elCountPanel.hidden = true;
-    selectableCards.forEach(function (sc) { sc.el.classList.remove('active'); });
-    elRegionGrid.scrollIntoView({ block: 'start' });
+    showScreen(screenLearnSelect);
+  });
+  document.getElementById('btn-learn-select-back').addEventListener('click', function () {
+    showScreen(screenLength);
   });
   document.getElementById('btn-learn-prev').addEventListener('click', function () {
     learnIndex = (learnIndex - 1 + LEARN_ORDER.length) % LEARN_ORDER.length;
@@ -1117,8 +1128,9 @@
     renderLearn();
   });
   document.getElementById('btn-learn-back').addEventListener('click', function () {
-    regionFlow = 'quiz';
-    updateRegionCardCounts();
+    showScreen(screenLearnSelect);
+  });
+  document.getElementById('btn-learn-title').addEventListener('click', function () {
     showScreen(screenLength);
   });
 
