@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>都道府県シルエットクイズ</title>
-<meta name="description" content="形だけを見て都道府県名を漢字で当てよう。10問・20問・47都道府県、静止・反転・ランダム回転の3ステージから遊べる形当てクイズ。">
+<meta name="description" content="形だけを見て都道府県名を漢字で当てよう。10問・20問・47都道府県、静止・ランダム回転の2ステージから遊べる形当てクイズ。">
 <meta property="og:type" content="website">
 <meta property="og:title" content="都道府県シルエットクイズ">
-<meta property="og:description" content="形だけを見て都道府県名を漢字で当てよう。10問・20問・47都道府県、静止・反転・ランダム回転の3ステージから遊べる形当てクイズ。">
+<meta property="og:description" content="形だけを見て都道府県名を漢字で当てよう。10問・20問・47都道府県、静止・ランダム回転の2ステージから遊べる形当てクイズ。">
 <meta property="og:url" content="https://laotour-log.github.io/my-games/prefecture_quiz/">
 <meta property="og:image" content="https://laotour-log.github.io/my-games/prefecture_quiz/ogp_image.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -211,6 +211,35 @@
   .mode-card .title { font-weight: 700; font-size: 1rem; letter-spacing: 0.05em; }
   .mode-card .desc { font-size: 1rem; color: var(--sub); line-height: 1.6; }
 
+  .mode-card.stage-card {
+    cursor: default;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .mode-card.stage-card:hover { border-color: var(--border); transform: none; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    flex: 1 1 30%;
+    min-width: 84px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--accent);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  }
+  .chip:hover { border-color: var(--accent); background: rgba(78,224,138,0.08); transform: translateY(-1px); }
+  .chip:active { transform: translateY(0); }
+
   /* play / learn shared */
   .hud {
     width: 100%;
@@ -270,7 +299,7 @@
   .silhouette-box path { fill: var(--accent); transition: fill 0.15s ease; }
   .stage.shake .silhouette-box path { fill: var(--miss); }
 
-  /* 回転・反転は出題ごとにJSでsvgへ直接style指定する（STAGE3のランダム反転に対応するため） */
+  /* 回転・反転は出題ごとにJSでsvgへ直接style指定する（STAGE2のランダム反転に対応するため） */
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes spin-mirror {
     from { transform: scaleX(-1) rotate(0deg); }
@@ -373,61 +402,39 @@
     </button>
   </div>
 
-  <!-- LENGTH SELECT (top level) -->
+  <!-- STAGE + LENGTH SELECT (top level) -->
   <section class="screen" id="screen-length">
     <h1>都道府県<span>シルエット</span>クイズ</h1>
     <p class="lead">形だけを見て、都道府県名を漢字で当てよう。</p>
     <div class="mode-grid">
-      <button class="mode-card" id="btn-length-10">
+      <div class="mode-card stage-card">
         <span class="body">
-          <span class="title">10問</span>
-          <span class="desc">ランダムで10問だけ。一番サクッと遊べる。</span>
+          <span class="title">STAGE 1</span>
+          <span class="desc">形が静止したまま出題される。</span>
         </span>
-      </button>
-      <button class="mode-card" id="btn-length-20">
+        <div class="chip-row">
+          <button class="chip" data-mode="easy" data-count="10">10問</button>
+          <button class="chip" data-mode="easy" data-count="20">20問</button>
+          <button class="chip" data-mode="easy" data-count="full">47都道府県</button>
+        </div>
+      </div>
+      <div class="mode-card stage-card">
         <span class="body">
-          <span class="title">20問</span>
-          <span class="desc">ランダムで20問だけ。</span>
+          <span class="title">STAGE 2</span>
+          <span class="desc">形が回転しながら出題される。反転するかは問題ごとにランダム。</span>
         </span>
-      </button>
-      <button class="mode-card" id="btn-length-full">
-        <span class="body">
-          <span class="title">47都道府県</span>
-          <span class="desc">全都道府県が重複なしで出題される。</span>
-        </span>
-      </button>
+        <div class="chip-row">
+          <button class="chip" data-mode="randmirror" data-count="10">10問</button>
+          <button class="chip" data-mode="randmirror" data-count="20">20問</button>
+          <button class="chip" data-mode="randmirror" data-count="full">47都道府県</button>
+        </div>
+      </div>
     </div>
     <div class="mode-grid">
       <button class="mode-card learn-card" id="btn-mode-learn">
         <span class="body">
           <span class="title">覚える</span>
           <span class="desc">形と名前を一緒に見ながら、1件ずつ順番に覚えていく。</span>
-        </span>
-      </button>
-    </div>
-  </section>
-
-  <!-- STAGE SELECT -->
-  <section class="screen" id="screen-stage" hidden>
-    <button class="btn-quit" id="btn-stage-back">← タイトルへ戻る</button>
-    <div class="badge" id="stage-length-label">クイック（20問）</div>
-    <div class="mode-grid">
-      <button class="mode-card" id="btn-mode-easy">
-        <span class="body">
-          <span class="title">STAGE 1</span>
-          <span class="desc">形が静止したまま出題される。</span>
-        </span>
-      </button>
-      <button class="mode-card" id="btn-mode-mirror">
-        <span class="body">
-          <span class="title">STAGE 2</span>
-          <span class="desc">形が左右反転して出題される。</span>
-        </span>
-      </button>
-      <button class="mode-card" id="btn-mode-randmirror">
-        <span class="body">
-          <span class="title">STAGE 3</span>
-          <span class="desc">形が回転しながら出題される。反転するかは問題ごとにランダム。</span>
         </span>
       </button>
     </div>
@@ -569,38 +576,13 @@
   /* ---------------- screens ---------------- */
 
   var screenLength = document.getElementById('screen-length');
-  var screenStage = document.getElementById('screen-stage');
   var screenQuiz = document.getElementById('screen-quiz');
   var screenLearn = document.getElementById('screen-learn');
   var screenResult = document.getElementById('screen-result');
 
   function showScreen(el) {
-    [screenLength, screenStage, screenQuiz, screenLearn, screenResult].forEach(function (s) { s.hidden = (s !== el); });
+    [screenLength, screenQuiz, screenLearn, screenResult].forEach(function (s) { s.hidden = (s !== el); });
   }
-
-  /* ---------------- length -> stage navigation ---------------- */
-
-  var pendingCount = PREF_DATA.length;
-  var elStageLengthLabel = document.getElementById('stage-length-label');
-
-  document.getElementById('btn-length-10').addEventListener('click', function () {
-    pendingCount = 10;
-    elStageLengthLabel.textContent = '10問';
-    showScreen(screenStage);
-  });
-  document.getElementById('btn-length-20').addEventListener('click', function () {
-    pendingCount = 20;
-    elStageLengthLabel.textContent = '20問';
-    showScreen(screenStage);
-  });
-  document.getElementById('btn-length-full').addEventListener('click', function () {
-    pendingCount = PREF_DATA.length;
-    elStageLengthLabel.textContent = '47都道府県';
-    showScreen(screenStage);
-  });
-  document.getElementById('btn-stage-back').addEventListener('click', function () {
-    showScreen(screenLength);
-  });
 
   /* ---------------- quiz (easy / hard) ---------------- */
 
@@ -664,13 +646,11 @@
     screenQuiz.classList.remove('keyboard-focus');
   });
 
-  // モードごとの回転・反転をsvgへ直接指定する（STAGE3は問題ごとに反転をランダム抽選するため）
+  // モードごとの回転をsvgへ直接指定する（STAGE2は問題ごとに反転をランダム抽選するため）
   function applyMotion(svg, mode) {
     svg.style.transform = '';
     svg.style.animation = '';
-    if (mode === 'mirror') {
-      svg.style.transform = 'scaleX(-1)';
-    } else if (mode === 'randmirror') {
+    if (mode === 'randmirror') {
       var mirrored = Math.random() < 0.5;
       svg.style.animation = (mirrored ? 'spin-mirror' : 'spin') + ' 3.5s linear infinite';
     }
@@ -819,9 +799,12 @@
     renderSilhouette(box, JAPAN_FULL);
   }
 
-  document.getElementById('btn-mode-easy').addEventListener('click', function () { startQuiz('easy', pendingCount); });
-  document.getElementById('btn-mode-mirror').addEventListener('click', function () { startQuiz('mirror', pendingCount); });
-  document.getElementById('btn-mode-randmirror').addEventListener('click', function () { startQuiz('randmirror', pendingCount); });
+  document.querySelectorAll('.chip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var count = btn.dataset.count === 'full' ? PREF_DATA.length : parseInt(btn.dataset.count, 10);
+      startQuiz(btn.dataset.mode, count);
+    });
+  });
   document.getElementById('btn-retry').addEventListener('click', function () { startQuiz(quiz ? quiz.mode : 'easy', quiz ? quiz.count : PREF_DATA.length); });
   document.getElementById('btn-back').addEventListener('click', function () { quiz = null; showScreen(screenLength); });
 
